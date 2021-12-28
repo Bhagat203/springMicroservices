@@ -160,3 +160,39 @@ For authentication implementation we go for a API gateway
  ie.Spring Cloud gateway
 create the project with dependency api gateway
 if required add the link eureka client service Url 
+
+In api gateway If you are not provinding custom config routing then spring.cloud.gateway.discovery.locator.enabled=true this enable other microceservice to to talk through application name by default is false
+Eg to call the microservices thtough gateway
+http://localhost:8765/CURRENCY-CONVERSION/currency-conversion/feign/from/USD/to/INR/quantity/100
+The CURRENCY-CONVERSION uppercase to make it lowercase
+
+From Custom Routing 
+1. Create a Congig class with @Configuration
+@Configuration
+public class ApiGatewayConfig {
+
+	public RouteLocator getwayRouter(RouteLocatorBuilder builder) {
+		return builder.routes().build();
+	}
+	
+	
+}
+this is when you don't give a custom routes
+if u want to customize it use route method which takes a function as argument
+		@Bean
+	public RouteLocator getwayRouter(RouteLocatorBuilder builder) {
+		return builder.routes()
+				.route(f->f.path("/get")//sets the path of the request
+						.filters(l -> l
+								.addRequestHeader("hi", "MyURI") // add the header 
+								.addRequestParameter("name","Ram"))//add the new parameter
+						.uri("http://httpbin.org:80")) // redirect it this uri
+				.build();
+	}
+	
+#spring.cloud.gateway.discovery.locator.enabled=true
+#spring.cloud.gateway.discovery.locator.lowerCaseServiceId=true disable this two properties and
+http://localhost:8765/CURRENCY-CONVERSION/currency-conversion/feign/from/USD/to/INR/quantity/100
+http://localhost:8765/currency-conversion/feign/from/USD/to/INR/quantity/100
+				.route(f->f.path("/currency-exchange/**")//finds this path 
+						uri("lb://currency-exchange"))and redirect to lb->load balancer
